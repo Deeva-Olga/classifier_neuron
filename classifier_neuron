@@ -47,9 +47,6 @@ rescaledX = scaler.transform(X)
 print(rescaledX[:,0].mean(),'and',rescaledX[:,0].std())
 df = pd.DataFrame(rescaledX)
 df.to_csv("classificator_2_rescaled.csv", header=False, index=False)
-all_df = pd.read_csv("classificator_2_rescaled.csv")
-clf = train_classifier(all_df)
-dump(clf, 'neuron_no_axes_rescaled1.joblib')
 
 from sklearn.preprocessing import MinMaxScaler
 scaler = MinMaxScaler()
