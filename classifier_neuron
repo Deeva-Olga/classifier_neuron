@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+import os
+import cv2
+import pandas as pd
+import numpy as np
+import seaborn as sns
+from PIL import Image
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.ensemble import RandomForestClassifier
+from joblib import dump, load
+import pickle
+
+def train_classifier(all_df):
+    """
+    Trains classifier
+    :return: classifier
+    if not os.path.exists('all_per.csv'):
+        all_df = pd.concat([
+            process_images_from_directory('damaged', 1),
+            process_images_from_directory('normal', 0)
+        ])
+        all_df.to_csv('all_per.csv', index=False)
+    else:"""
+    #print(all_df.head())
+    x_train, x_test, y_train, y_test = train_test_split(all_df.drop(['label', "Size X", "Size Y"], axis=1), all_df['label'], test_size=0.25, stratify=all_df['label'], shuffle=True, random_state=33)
+    clf = RandomForestClassifier(n_estimators=100, random_state=33)
+    clf.fit(x_train, y_train)
+    y_pred = clf.predict(x_test)
+    print(classification_report(y_test, y_pred))  
+    plt.show()
+    return clf
+
+all_df = pd.read_csv("classificator_2.csv")
+clf = train_classifier(all_df)
+dump(clf, 'neuron_no_axes1.joblib')
+
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import minmax_scale
+X=pd.read_csv("classificator_2.csv")
+scaler = StandardScaler().fit(X)
+
+rescaledX = scaler.transform(X)
+print(rescaledX[:,0].mean(),'and',rescaledX[:,0].std())
+df = pd.DataFrame(rescaledX)
+df.to_csv("classificator_2_rescaled.csv", header=False, index=False)
+all_df = pd.read_csv("classificator_2_rescaled.csv")
+clf = train_classifier(all_df)
+dump(clf, 'neuron_no_axes_rescaled1.joblib')
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+print(scaler.fit(X))
+MinMaxScaler()
+print(scaler.data_max_)
+print(scaler.data_min_)
+tips = pd.read_csv("./classificator_2.csv")
+tips.corr()
+
+sns.set(font_scale=1.15)
+plt.figure(figsize=(8,4))
+sns.heatmap(
+    tips.corr(),        
+    cmap='RdBu_r', # задаёт цветовую схему
+    annot=True, # рисует значения внутри ячеек
+    vmin=-1, vmax=1); # указывает начало цветовых кодов от -1 до 1.
+
+from sklearn.metrics import confusion_matrix
+confusion_matrix(y_test, y_pred)
+ort time
+start_time = time.time()
+importances = clf.feature_importances_
+std = np.std([tree.feature_importances_ for tree in clf.estimators_], axis=0)
+elapsed_time = time.time() - start_time
+
+print(f"Elapsed time to compute the importances: {elapsed_time:.3f} seconds")
+feature_names=["площадь", "округлость", "сложность"]
+forest_importances = pd.Series(importances, index=feature_names)
+
+fig, ax = plt.subplots()
+forest_importances.plot.bar(ax=ax)
+ax.set_title("Функции")
+ax.set_ylabel("Средняя значимость функции")
+fig.tight_layout()
+
+tips = pd.read_csv("./classificator_2.csv")
+tips.head()
+plt.rc('xtick', labelsize=12)
+plt.rc('ytick', labelsize=12)
+plt.rc('axes', labelsize=14)
+#sns.set_style('darkgrid')
+sns.pairplot(tips, hue = "label")
+plt.tight_layout();
